@@ -104,7 +104,15 @@ Antes de modelar se ejecuta `scripts/verificar_dataset.py`, que comprueba autom�
 - **Variables categóricas:** número de categorías de `proto`, `service` y `state`, y proporción de ataques por categoría. `proto` tiene muchas categorías poco frecuentes.
 - **Correlaciones:** las 15 variables numéricas más correlacionadas con el objetivo, con un mapa de calor para detectar redundancia entre ellas (por ejemplo, entre paquetes y bytes).
 
-_[Completar con los hallazgos concretos tras ejecutar el notebook.]_
+**Hallazgos concretos:**
+
+- El dataset tiene **82.332 filas y 45 columnas**, con 30 de tipo entero, 11 de tipo flotante y 4 de tipo string. Se encontraron **28.380 filas duplicadas** al comparar las variables de entrada y `label`.\
+No existen valores nulos explícitos (`NaN`) en las variables de entrada predichas.
+
+- Hay **45.332 ataques (55,06 %)** y **37.000 flujos normales (44,94 %)**. La diferencia es moderada, por lo que no se observa un desbalance extremo.
+- Las variables numéricas presentan escalas muy diferentes y sesgos fuertes. Por ejemplo, `dur`, `sbytes`, `dbytes`, `rate`, `sload`, `sjit` y `response_body_len` concentran gran parte de sus observaciones en valores bajos y muestran colas largas; por eso se visualizaron `sbytes`, `dur` y `sttl` con transformación `log1p`.
+- `proto` tiene **131 categorías**, con predominio de `tcp` (43.095), `udp` (29.418) y `unas` (3.515). `service` tiene **13 categorías**, principalmente `-` (47.153), `dns` (21.367) y `http` (8.287). `state` tiene **7 categorías**, encabezadas por `FIN` (39.339), `INT` (34.163) y `CON` (6.982).
+- Las variables con mayor correlación absoluta con `label` fueron `sttl` (0,504), `swin` (0,415), `ct_dst_sport_ltm` (0,394), `dwin` (0,369), `ct_src_dport_ltm` (0,342), `rate` (0,329) y `ct_state_ttl` (0,319). También aparecen entre las 15 principales `ct_srv_dst`, `ct_srv_src`, `dtcpb`, `stcpb`, `dload`, `ct_dst_src_ltm`, `ct_src_ltm` y `ct_dst_ltm`.
 
 ### 3.3 Limpieza y decisiones sobre los datos
 

@@ -1,7 +1,7 @@
 {
   "version": "v1",
-  "fecha": "2026-09-29",
-  "archivo_modelo": "modelo_v1_2026-09-29.joblib",
+  "fecha": "2026-09-30",
+  "archivo_modelo": "modelo_v1_2026-09-30.joblib",
   "estimador": "random_forest",
   "parametros_estimador": {
     "bootstrap": "True",

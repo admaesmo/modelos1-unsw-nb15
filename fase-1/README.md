@@ -2,6 +2,12 @@
 
 **Entrega:** 30 de septiembre de 2026 (5 % de la nota).
 
+## Integrantes
+
+- Adrian ([@admaesmo](https://github.com/admaesmo))
+- Felipe Cetina ([@Reginork](https://github.com/Reginork))
+- Bryan Medrano ([@bryanmedrano](https://github.com/bryanmedrano))
+
 ## Problema
 
 Clasificación binaria de flujos de tráfico de red: **normal (0)** o **ataque (1)**. Una red recibe miles de conexiones por minuto y solo una fracción son ataques; revisarlas manualmente no es viable a esa escala. Detectar intrusiones de forma automática permite priorizar la atención del equipo de seguridad y reaccionar antes de que un ataque tenga éxito.
@@ -13,7 +19,7 @@ El modelo recibe un **flujo de red** (una conexión) descrito por sus 42 variabl
 1. una **clase**: `0` (tráfico normal) o `1` (ataque);
 2. una **probabilidad** de que ese flujo sea un ataque (entre 0 y 1), útil para priorizar alertas en vez de tratarlas todas por igual.
 
-Internamente, el flujo de datos es siempre el mismo, tanto al entrenar como al predecir sobre datos nuevos (ver sección 9 del notebook):
+Internamente, el flujo de datos es siempre el mismo, tanto al entrenar como al predecir sobre datos nuevos (ver sección 10 del notebook):
 
 ```
 flujo de red (42 variables crudas)
@@ -44,17 +50,18 @@ https://www.kaggle.com/datasets/mrwellsdavid/unsw-nb15
 
 1. **EDA:** dimensiones, tipos, nulos (separando NaN reales de marcadores como `"-"`), distribución del objetivo, estadísticas descriptivas y gráficas.
 2. **Split train/test (80/20)** estratificado y con `random_state = 42`, **antes de cualquier transformación**.
-3. **Un único `Pipeline`** de scikit-learn:
+3. **Modelo base (baseline)** (notebook, sección 6): un `DummyClassifier` que predice siempre la clase mayoritaria (tráfico normal), sin usar ninguna variable. Sirve como punto de comparación obligatorio: si el modelo final no lo supera con claridad, no estaría aportando valor real.
+4. **Un único `Pipeline`** de scikit-learn:
    - numéricas: `SimpleImputer(median)` + `StandardScaler`;
    - categóricas: `SimpleImputer(most_frequent)` + `OneHotEncoder(handle_unknown="ignore")`;
    - estimador: `LogisticRegression` o `RandomForestClassifier`.
-4. **Selección del modelo** (lo hacemos en el notebook, sección 6.1): se comparan los dos estimadores del Pipeline (regresión logística y Random Forest) con **validación cruzada estratificada de 3 folds**, calculada **únicamente sobre el conjunto de train** — el test nunca interviene en esta comparación, para que su métrica final sea una estimación honesta y no esté sesgada por haberse usado para elegir el modelo.
+5. **Selección del modelo** (notebook, sección 7.1): se comparan los dos estimadores del Pipeline (regresión logística y Random Forest) con **validación cruzada estratificada de 3 folds**, calculada **únicamente sobre el conjunto de train** — el test nunca interviene en esta comparación, para que su métrica final sea una estimación honesta y no esté sesgada por haberse usado para elegir el modelo.
 
-   > **¿Qué es la validación cruzada estratificada?** En vez de entrenar una sola vez y medir sobre una única partición (lo que dependería de la suerte de esa partición), el conjunto de train se divide en **3 partes  de tamaño similar**. El modelo se entrena 3 veces: en cada vuelta, usa 2 de las partes para entrenar y mide el F1 sobre la parte restante, rotando cuál parte queda afuera cada vez. Al final se promedian los 3 F1 obtenidos (por eso el resultado se reporta como media ± desviación estándar). Es **estratificada** porque cada una de las 3 partes conserva la misma proporción de ataques y de tráfico normal que el conjunto completo (63,4 %/36,6 %); sin esto, alguna parte podría quedar con muy pocos ataques por azar y distorsionar la comparación entre modelos.
+   > **¿Qué es la validación cruzada estratificada?** En vez de entrenar una sola vez y medir sobre una única partición (lo que dependería de la suerte de esa partición), el conjunto de train se divide en **3 partes de tamaño similar**. El modelo se entrena 3 veces: en cada vuelta, usa 2 de las partes para entrenar y mide el F1 sobre la parte restante, rotando cuál parte queda afuera cada vez. Al final se promedian los 3 F1 obtenidos (por eso el resultado se reporta como media ± desviación estándar). Es **estratificada** porque cada una de las 3 partes conserva la misma proporción de ataques y de tráfico normal que el conjunto completo (63,4 %/36,6 %); sin esto, alguna parte podría quedar con muy pocos ataques por azar y distorsionar la comparación entre modelos.
 
-   La métrica de comparación es el **F1 de la clase "ataque"**, porque el objetivo está moderadamente desbalanceado (63,4 % normal / 36,6 % ataque) e importan tanto los falsos negativos (ataques no detectados) como los falsos positivos (falsas alarmas). El modelo con mayor F1 promedio en CV se reentrena con todo el conjunto de train (sección 6.2) y es el que pasa a la evaluación final del punto 5.
-5. **Evaluación final en test:** precision, recall, F1, reporte de clasificación y matriz de confusión.
-6. **Serialización** del Pipeline completo con `joblib` y de un JSON de metadatos.
+   La métrica de comparación es el **F1 de la clase "ataque"**, porque el objetivo está moderadamente desbalanceado (63,4 % normal / 36,6 % ataque) e importan tanto los falsos negativos (ataques no detectados) como los falsos positivos (falsas alarmas). El modelo con mayor F1 promedio en CV se reentrena con todo el conjunto de train (sección 7.2) y es el que pasa a la evaluación final del punto 6.
+6. **Evaluación final en test:** precision, recall, F1, reporte de clasificación, matriz de confusión y **comparación explícita contra el baseline** del punto 3.
+7. **Serialización** del Pipeline completo con `joblib` y de un JSON de metadatos.
 
 Como todas las transformaciones se ajustan dentro del Pipeline, nunca se hace `fit` con datos de test: no hay fuga de información.
 
@@ -94,6 +101,9 @@ modelo.predict(df_nuevo)  # df_nuevo con las columnas de "orden_columnas" del JS
 
 | Modelo | F1 (CV en train) | Precision (test) | Recall (test) | F1 (test) |
 |---|---|---|---|---|
+| Baseline (`DummyClassifier`, predice siempre "normal") | — | 0,000 | 0,000 | 0,000 |
 | Regresión logística | 0,848 ± 0,006 | — | — | — |
 | Random Forest | 0,936 ± 0,004 | — | — | — |
 | **Seleccionado: Random Forest** | | 0,957 | 0,932 | 0,945 |
+
+El baseline obtiene F1 = 0 en la clase ataque porque nunca predice esa clase. El modelo seleccionado mejora el F1 en +0,945 sobre ese punto de partida: la ganancia no es marginal.

@@ -154,10 +154,13 @@ Con este diseño:
 - en la validación cruzada, cada fold ajusta su propio preprocesamiento;
 - el modelo guardado incluye el preprocesamiento, así que en producción basta con `modelo.predict(datos_crudos)`.
 
-### 3.6 Modelos iniciales
+### 3.6 Modelo base y modelos candidatos
+
+Antes de comparar modelos candidatos se entrena un **modelo base (baseline)**: un `DummyClassifier` que predice siempre "normal" (la clase mayoritaria), sin usar ninguna variable. Sirve como punto de referencia obligatorio — si el modelo final no lo supera con claridad, no estaría aportando valor real sobre no hacer nada.
 
 | Modelo | Por qué probarlo | Estado |
 |---|---|---|
+| **Baseline (`DummyClassifier`)** | Punto de comparación: mide si el resto de modelos realmente aporta valor | Implementado |
 | **Regresión logística** | Línea base lineal, rápida e interpretable | Implementado |
 | **Random Forest** | Captura relaciones no lineales e interacciones, es robusto a escalas y valores extremos, y aporta importancia de variables | Implementado (profundidad limitada para que el modelo pese poco) |
 | Árbol de decisión | Muy interpretable; útil para explicar las reglas que separan ataques de tráfico normal | Candidato |
@@ -177,9 +180,12 @@ Sobre el conjunto de prueba se reportan precision, recall, F1, el reporte de cla
 
 | Modelo | F1 (CV en entrenamiento) | Precision (prueba) | Recall (prueba) | F1 (prueba) |
 |---|---|---|---|---|
+| Baseline (`DummyClassifier`, predice siempre "normal") | — | 0,000 | 0,000 | 0,000 |
 | Regresión logística | 0,848 ± 0,006 | — | — | — |
 | Random Forest | 0,936 ± 0,004 | — | — | — |
 | **Seleccionado: Random Forest** | | 0,957 | 0,932 | 0,945 |
+
+El baseline obtiene F1 = 0 en la clase ataque porque, al predecir siempre "normal", nunca acierta ningún ataque. El modelo seleccionado mejora el F1 en +0,945 sobre ese punto de partida.
 
 ### 3.8 Modelo guardado
 

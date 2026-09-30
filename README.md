@@ -63,7 +63,7 @@ Cada **fila** es un flujo de red y cada **columna**, una característica de ese 
 | Tipo de ataque | `attack_cat` | Normal, Fuzzers, Analysis, Backdoor, DoS, Exploits, Generic, Reconnaissance, Shellcode, Worms. **Se excluye.** |
 | **Objetivo** | `label` | **0 = normal, 1 = ataque** |
 
-Resultan **44 variables predictoras**: 40 numéricas y 4 categóricas.
+Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, `service`, `state`). El script `scripts/verificar_dataset.py` reporta 44 columnas en total sin contar el objetivo, pero descuenta `id` y `attack_cat` por tratarse de un identificador y de una columna derivada del objetivo (ver su sección 7, "columnas sospechosas de fuga").
 
 ### Cumplimiento de los requisitos del curso
 
@@ -71,8 +71,8 @@ Resultan **44 variables predictoras**: 40 numéricas y 4 categóricas.
 |---|---|---|
 | Clasificación o regresión con objetivo definido | Clasificación binaria sobre `label` | ✅ |
 | ≥ 1.000 observaciones | ~175.000 flujos | ✅ |
-| ≥ 5 variables predictoras | 44 | ✅ |
-| Variables numéricas y/o categóricas | 40 numéricas y 4 categóricas | ✅ |
+| ≥ 5 variables predictoras | 42 (excluyendo `id` y `attack_cat`) | ✅ |
+| Variables numéricas y/o categóricas | 39 numéricas y 3 categóricas | ✅ |
 | No es serie de tiempo | Cada flujo es una observación independiente (corte transversal) | ✅ |
 | Alguna predictora con 0,1 %-2 % de nulos | Ninguna predictora tiene NaN reales ni marcadores en el rango exigido. `service = "-"` aparece en 57,272 % de los registros, pero es una categoría legítima | ❌ |
 | Procesable en un computador personal | CSV de unas decenas de MB | ✅ |
@@ -104,15 +104,16 @@ Antes de modelar se ejecuta `scripts/verificar_dataset.py`, que comprueba autom�
 - **Variables categóricas:** número de categorías de `proto`, `service` y `state`, y proporción de ataques por categoría. `proto` tiene muchas categorías poco frecuentes.
 - **Correlaciones:** las 15 variables numéricas más correlacionadas con el objetivo, con un mapa de calor para detectar redundancia entre ellas (por ejemplo, entre paquetes y bytes).
 
-**Hallazgos concretos:**
+**Hallazgos concretos (ejecutado sobre `UNSW_NB15_training-set.csv`, 82.332 filas):**
 
-- El dataset tiene **82.332 filas y 45 columnas**, con 30 de tipo entero, 11 de tipo flotante y 4 de tipo string. Se encontraron **28.380 filas duplicadas** al comparar las variables de entrada y `label`.\
-No existen valores nulos explícitos (`NaN`) en las variables de entrada predichas.
+- El archivo no tiene valores nulos (`NaN`) reales en ninguna columna. El único "faltante" es el marcador `"-"` en `service` (65 % de las filas), que se trata como categoría legítima ("servicio no identificado"), no como dato faltante. Por eso no se cumple estrictamente el requisito de 0,1 %-2 % de nulos; el profesor aprobó el dataset de todas formas porque esa condición no es crítica.
+- **28.380 filas (34,5 %) eran duplicadas** al comparar solo las columnas predictoras y el objetivo (`id` es un simple contador de fila y se ignora en esa comparación). Se eliminaron antes del split train/test, dejando **53.952 filas**.
+- **Distribución del objetivo tras la limpieza:** 63,4 % normal (34.206) / 36,6 % ataque (19.746) — desbalance moderado, no severo.
+- **Desglose por tipo de ataque (`attack_cat`, solo para entender el problema, no se usa como predictora):** Exploits (7.126), Fuzzers (4.394), Generic (3.640), Reconnaissance (2.469), DoS (1.315), Shellcode (377), Analysis (312), Backdoor (70), Worms (43).
+- **Variables más correlacionadas con el objetivo:** `sttl` y `dttl` (TTL de origen y destino, correlación 0,36 y 0,28), `dload` (carga del destino, 0,24) y los contadores de conexiones recientes `ct_dst_sport_ltm` (0,23) y `ct_state_ttl` (0,19). Son buenas candidatas para explicar qué distingue a un ataque.
+- **Cardinalidad de las categóricas:** `proto` tiene 131 categorías, de las cuales 124 aparecen en menos de 10 filas; `tcp` y `udp` concentran el 85 % del tráfico. `service` tiene 13 categorías y `state` solo 7. `OneHotEncoder(handle_unknown="ignore")` las codifica todas sin necesidad de agruparlas, y tolera protocolos nuevos en producción.
 
-- Hay **45.332 ataques (55,06 %)** y **37.000 flujos normales (44,94 %)**. La diferencia es moderada, por lo que no se observa un desbalance extremo.
-- Las variables numéricas presentan escalas muy diferentes y sesgos fuertes. Por ejemplo, `dur`, `sbytes`, `dbytes`, `rate`, `sload`, `sjit` y `response_body_len` concentran gran parte de sus observaciones en valores bajos y muestran colas largas; por eso se visualizaron `sbytes`, `dur` y `sttl` con transformación `log1p`.
-- `proto` tiene **131 categorías**, con predominio de `tcp` (43.095), `udp` (29.418) y `unas` (3.515). `service` tiene **13 categorías**, principalmente `-` (47.153), `dns` (21.367) y `http` (8.287). `state` tiene **7 categorías**, encabezadas por `FIN` (39.339), `INT` (34.163) y `CON` (6.982).
-- Las variables con mayor correlación absoluta con `label` fueron `sttl` (0,504), `swin` (0,415), `ct_dst_sport_ltm` (0,394), `dwin` (0,369), `ct_src_dport_ltm` (0,342), `rate` (0,329) y `ct_state_ttl` (0,319). También aparecen entre las 15 principales `ct_srv_dst`, `ct_srv_src`, `dtcpb`, `stcpb`, `dload`, `ct_dst_src_ltm`, `ct_src_ltm` y `ct_dst_ltm`.
+> **Nota:** una versión anterior de esta sección reportaba estos mismos hallazgos calculados *antes* de eliminar los duplicados (55,06 % / 44,94 % de la distribución del objetivo). Las cifras de arriba son las correctas, después de la limpieza aplicada en `fase-1/fase1_modelo.ipynb` (sección 4.1.1).
 
 ### 3.3 Limpieza y decisiones sobre los datos
 
@@ -176,9 +177,9 @@ Sobre el conjunto de prueba se reportan precision, recall, F1, el reporte de cla
 
 | Modelo | F1 (CV en entrenamiento) | Precision (prueba) | Recall (prueba) | F1 (prueba) |
 |---|---|---|---|---|
-| Regresión logística | _[completar]_ | — | — | — |
-| Random Forest | _[completar]_ | — | — | — |
-| **Seleccionado:** _[completar]_ | | _[completar]_ | _[completar]_ | _[completar]_ |
+| Regresión logística | 0,848 ± 0,006 | — | — | — |
+| Random Forest | 0,936 ± 0,004 | — | — | — |
+| **Seleccionado: Random Forest** | | 0,957 | 0,932 | 0,945 |
 
 ### 3.8 Modelo guardado
 

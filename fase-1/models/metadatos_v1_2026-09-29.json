@@ -1,0 +1,458 @@
+{
+  "version": "v1",
+  "fecha": "2026-09-29",
+  "archivo_modelo": "modelo_v1_2026-09-29.joblib",
+  "estimador": "random_forest",
+  "parametros_estimador": {
+    "bootstrap": "True",
+    "ccp_alpha": "0.0",
+    "class_weight": "None",
+    "criterion": "'gini'",
+    "max_depth": "20",
+    "max_features": "'sqrt'",
+    "max_leaf_nodes": "None",
+    "max_samples": "None",
+    "min_impurity_decrease": "0.0",
+    "min_samples_leaf": "2",
+    "min_samples_split": "2",
+    "min_weight_fraction_leaf": "0.0",
+    "monotonic_cst": "None",
+    "n_estimators": "100",
+    "n_jobs": "-1",
+    "oob_score": "False",
+    "random_state": "42",
+    "verbose": "0",
+    "warm_start": "False"
+  },
+  "dataset": "UNSW_NB15_training-set.csv",
+  "target": "label",
+  "clases": {
+    "0": "normal",
+    "1": "ataque"
+  },
+  "columnas_excluidas": [
+    "id",
+    "attack_cat"
+  ],
+  "columnas_entrada": {
+    "dur": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "spkts": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dpkts": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "sbytes": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dbytes": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "rate": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "sttl": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dttl": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "sload": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "dload": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "sloss": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dloss": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "sinpkt": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "dinpkt": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "sjit": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "djit": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "swin": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "stcpb": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dtcpb": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dwin": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "tcprtt": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "synack": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "ackdat": {
+      "tipo": "numerica",
+      "dtype": "float64"
+    },
+    "smean": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "dmean": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "trans_depth": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "response_body_len": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_srv_src": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_state_ttl": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_dst_ltm": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_src_dport_ltm": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_dst_sport_ltm": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_dst_src_ltm": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "is_ftp_login": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_ftp_cmd": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_flw_http_mthd": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_src_ltm": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "ct_srv_dst": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "is_sm_ips_ports": {
+      "tipo": "numerica",
+      "dtype": "int64"
+    },
+    "proto": {
+      "tipo": "categorica",
+      "dtype": "str",
+      "categorias_train": [
+        "3pc",
+        "a/n",
+        "aes-sp3-d",
+        "any",
+        "argus",
+        "aris",
+        "arp",
+        "ax.25",
+        "bbn-rcc",
+        "bna",
+        "br-sat-mon",
+        "cbt",
+        "cftp",
+        "chaos",
+        "compaq-peer",
+        "cphb",
+        "cpnx",
+        "crtp",
+        "crudp",
+        "dcn",
+        "ddp",
+        "ddx",
+        "dgp",
+        "egp",
+        "eigrp",
+        "emcon",
+        "encap",
+        "etherip",
+        "fc",
+        "fire",
+        "ggp",
+        "gmtp",
+        "gre",
+        "hmp",
+        "iatp",
+        "ib",
+        "idpr",
+        "idpr-cmtp",
+        "idrp",
+        "ifmp",
+        "igmp",
+        "ip",
+        "ipcomp",
+        "ipcv",
+        "ipip",
+        "iplt",
+        "ipnip",
+        "ippc",
+        "ipv6",
+        "ipv6-frag",
+        "ipv6-opts",
+        "ipv6-route",
+        "ipx-n-ip",
+        "irtp",
+        "isis",
+        "iso-ip",
+        "iso-tp4",
+        "kryptolan",
+        "l2tp",
+        "larp",
+        "leaf-1",
+        "leaf-2",
+        "merit-inp",
+        "mfe-nsp",
+        "mhrp",
+        "micp",
+        "mobile",
+        "mtp",
+        "mux",
+        "narp",
+        "netblt",
+        "nsfnet-igp",
+        "nvp",
+        "ospf",
+        "pgm",
+        "pim",
+        "pipe",
+        "pnni",
+        "pri-enc",
+        "prm",
+        "ptp",
+        "pup",
+        "pvp",
+        "qnx",
+        "rdp",
+        "rsvp",
+        "rvd",
+        "sat-expak",
+        "sat-mon",
+        "sccopmce",
+        "scps",
+        "sctp",
+        "sdrp",
+        "secure-vmtp",
+        "sep",
+        "skip",
+        "sm",
+        "smp",
+        "snp",
+        "sprite-rpc",
+        "sps",
+        "srp",
+        "st2",
+        "stp",
+        "sun-nd",
+        "swipe",
+        "tcf",
+        "tcp",
+        "tlsp",
+        "tp++",
+        "trunk-1",
+        "trunk-2",
+        "ttp",
+        "udp",
+        "unas",
+        "uti",
+        "vines",
+        "visa",
+        "vmtp",
+        "vrrp",
+        "wb-expak",
+        "wb-mon",
+        "wsn",
+        "xns-idp",
+        "xtp",
+        "zero"
+      ]
+    },
+    "service": {
+      "tipo": "categorica",
+      "dtype": "str",
+      "categorias_train": [
+        "-",
+        "dhcp",
+        "dns",
+        "ftp",
+        "ftp-data",
+        "http",
+        "irc",
+        "pop3",
+        "radius",
+        "smtp",
+        "snmp",
+        "ssh",
+        "ssl"
+      ]
+    },
+    "state": {
+      "tipo": "categorica",
+      "dtype": "str",
+      "categorias_train": [
+        "ACC",
+        "CLO",
+        "CON",
+        "FIN",
+        "INT",
+        "REQ"
+      ]
+    }
+  },
+  "orden_columnas": [
+    "dur",
+    "spkts",
+    "dpkts",
+    "sbytes",
+    "dbytes",
+    "rate",
+    "sttl",
+    "dttl",
+    "sload",
+    "dload",
+    "sloss",
+    "dloss",
+    "sinpkt",
+    "dinpkt",
+    "sjit",
+    "djit",
+    "swin",
+    "stcpb",
+    "dtcpb",
+    "dwin",
+    "tcprtt",
+    "synack",
+    "ackdat",
+    "smean",
+    "dmean",
+    "trans_depth",
+    "response_body_len",
+    "ct_srv_src",
+    "ct_state_ttl",
+    "ct_dst_ltm",
+    "ct_src_dport_ltm",
+    "ct_dst_sport_ltm",
+    "ct_dst_src_ltm",
+    "is_ftp_login",
+    "ct_ftp_cmd",
+    "ct_flw_http_mthd",
+    "ct_src_ltm",
+    "ct_srv_dst",
+    "is_sm_ips_ports",
+    "proto",
+    "service",
+    "state"
+  ],
+  "split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "estratificado": true,
+    "n_train": 43161,
+    "n_test": 10791
+  },
+  "metricas_cv_f1": {
+    "logreg": {
+      "media": 0.8475218656064225,
+      "std": 0.005609988486542182
+    },
+    "random_forest": {
+      "media": 0.9359957907232742,
+      "std": 0.0038198293695965793
+    }
+  },
+  "metricas_test": {
+    "precision": 0.9573582943317732,
+    "recall": 0.9323879463155229,
+    "f1": 0.9447081462475946,
+    "classification_report": {
+      "0": {
+        "precision": 0.9615550755939525,
+        "recall": 0.9760304004676995,
+        "f1-score": 0.9687386668600856,
+        "support": 6842.0
+      },
+      "1": {
+        "precision": 0.9573582943317732,
+        "recall": 0.9323879463155229,
+        "f1-score": 0.9447081462475946,
+        "support": 3949.0
+      },
+      "accuracy": 0.9600593086831619,
+      "macro avg": {
+        "precision": 0.9594566849628628,
+        "recall": 0.9542091733916112,
+        "f1-score": 0.9567234065538401,
+        "support": 10791.0
+      },
+      "weighted avg": {
+        "precision": 0.9600192504429612,
+        "recall": 0.9600593086831619,
+        "f1-score": 0.9599446231293167,
+        "support": 10791.0
+      }
+    }
+  },
+  "versiones": {
+    "python": "3.13.7",
+    "sklearn": "1.9.1",
+    "pandas": "3.0.6",
+    "numpy": "2.4.6",
+    "joblib": "1.6.0"
+  }
+}

@@ -86,14 +86,20 @@ def main() -> int:
         return 2
 
     predictoras = [c for c in df.columns if c != args.objetivo]
+    sospechosas = columnas_sospechosas(df, args.objetivo)
+    cols_sospechosas = {c for c, _ in sospechosas}
+    predictoras_utiles = [c for c in predictoras if c not in cols_sospechosas]
 
     titulo(f"Dataset: {args.csv}")
 
-    # 1 y 2. Tamaño
+    # 1 y 2. Tamaño. El requisito de predictoras se evalúa excluyendo las columnas
+    # sospechosas de fuga (ver punto 7): un identificador o una columna derivada del
+    # objetivo no cuentan como predictoras válidas.
     ok_filas = len(df) >= MIN_FILAS
-    ok_predictoras = len(predictoras) >= MIN_PREDICTORAS
+    ok_predictoras = len(predictoras_utiles) >= MIN_PREDICTORAS
     print(f"1. Filas: {len(df):,}  (mínimo {MIN_FILAS:,}) -> {estado(ok_filas)}")
-    print(f"2. Predictoras: {len(predictoras)}  (mínimo {MIN_PREDICTORAS}) -> {estado(ok_predictoras)}")
+    print(f"2. Predictoras: {len(predictoras)} en total, {len(predictoras_utiles)} útiles tras excluir "
+          f"columnas sospechosas (mínimo {MIN_PREDICTORAS}) -> {estado(ok_predictoras)}")
 
     # 3. Tipos
     numericas = [c for c in predictoras if pd.api.types.is_numeric_dtype(df[c])]
@@ -142,9 +148,8 @@ def main() -> int:
     if ratio > 3:
         print(f"Aviso: desbalance (clase mayoritaria / minoritaria = {ratio:.1f}). Usar split estratificado y F1/recall.")
 
-    # 7. Columnas a excluir
+    # 7. Columnas a excluir (ya calculadas en el punto 2, para descontarlas de las predictoras)
     titulo("7. Columnas sospechosas de fuga o que deben excluirse")
-    sospechosas = columnas_sospechosas(df, args.objetivo)
     if sospechosas:
         for col, motivo in sospechosas:
             print(f"- {col}: {motivo}")

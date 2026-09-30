@@ -63,7 +63,7 @@ Cada **fila** es un flujo de red y cada **columna**, una característica de ese 
 | Tipo de ataque | `attack_cat` | Normal, Fuzzers, Analysis, Backdoor, DoS, Exploits, Generic, Reconnaissance, Shellcode, Worms. **Se excluye.** |
 | **Objetivo** | `label` | **0 = normal, 1 = ataque** |
 
-Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, `service`, `state`).
+Resultan **44 variables predictoras**: 40 numéricas y 4 categóricas.
 
 ### Cumplimiento de los requisitos del curso
 
@@ -71,10 +71,10 @@ Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, 
 |---|---|---|
 | Clasificación o regresión con objetivo definido | Clasificación binaria sobre `label` | ✅ |
 | ≥ 1.000 observaciones | ~175.000 flujos | ✅ |
-| ≥ 5 variables predictoras | 42 | ✅ |
-| Variables numéricas y/o categóricas | 39 numéricas y 3 categóricas | ✅ |
+| ≥ 5 variables predictoras | 44 | ✅ |
+| Variables numéricas y/o categóricas | 40 numéricas y 4 categóricas | ✅ |
 | No es serie de tiempo | Cada flujo es una observación independiente (corte transversal) | ✅ |
-| Alguna predictora con 0,1 %-2 % de nulos | _[completar con la salida de `scripts/verificar_dataset.py`]_ | _[pendiente]_ |
+| Alguna predictora con 0,1 %-2 % de nulos | Ninguna predictora tiene NaN reales ni marcadores en el rango exigido. `service = "-"` aparece en 57,272 % de los registros, pero es una categoría legítima | ❌ |
 | Procesable en un computador personal | CSV de unas decenas de MB | ✅ |
 
 Los conteos exactos se obtienen con el script de verificación (ver sección 5).

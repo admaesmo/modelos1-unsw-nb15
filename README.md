@@ -63,7 +63,7 @@ Cada **fila** es un flujo de red y cada **columna**, una característica de ese 
 | Tipo de ataque | `attack_cat` | Normal, Fuzzers, Analysis, Backdoor, DoS, Exploits, Generic, Reconnaissance, Shellcode, Worms. **Se excluye.** |
 | **Objetivo** | `label` | **0 = normal, 1 = ataque** |
 
-Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, `service`, `state`).
+Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, `service`, `state`). El script `scripts/verificar_dataset.py` reporta 44 columnas en total sin contar el objetivo, pero descuenta `id` y `attack_cat` por tratarse de un identificador y de una columna derivada del objetivo (ver su sección 7, "columnas sospechosas de fuga").
 
 ### Cumplimiento de los requisitos del curso
 
@@ -71,10 +71,10 @@ Resultan **42 variables predictoras**: 39 numéricas y 3 categóricas (`proto`, 
 |---|---|---|
 | Clasificación o regresión con objetivo definido | Clasificación binaria sobre `label` | ✅ |
 | ≥ 1.000 observaciones | ~175.000 flujos | ✅ |
-| ≥ 5 variables predictoras | 42 | ✅ |
+| ≥ 5 variables predictoras | 42 (excluyendo `id` y `attack_cat`) | ✅ |
 | Variables numéricas y/o categóricas | 39 numéricas y 3 categóricas | ✅ |
 | No es serie de tiempo | Cada flujo es una observación independiente (corte transversal) | ✅ |
-| Alguna predictora con 0,1 %-2 % de nulos | _[completar con la salida de `scripts/verificar_dataset.py`]_ | _[pendiente]_ |
+| Alguna predictora con 0,1 %-2 % de nulos | Ninguna predictora tiene NaN reales ni marcadores en el rango exigido. `service = "-"` aparece en 57,272 % de los registros, pero es una categoría legítima | ❌ |
 | Procesable en un computador personal | CSV de unas decenas de MB | ✅ |
 
 Los conteos exactos se obtienen con el script de verificación (ver sección 5).
@@ -104,7 +104,16 @@ Antes de modelar se ejecuta `scripts/verificar_dataset.py`, que comprueba autom�
 - **Variables categóricas:** número de categorías de `proto`, `service` y `state`, y proporción de ataques por categoría. `proto` tiene muchas categorías poco frecuentes.
 - **Correlaciones:** las 15 variables numéricas más correlacionadas con el objetivo, con un mapa de calor para detectar redundancia entre ellas (por ejemplo, entre paquetes y bytes).
 
-_[Completar con los hallazgos concretos tras ejecutar el notebook.]_
+**Hallazgos concretos (ejecutado sobre `UNSW_NB15_training-set.csv`, 82.332 filas):**
+
+- El archivo no tiene valores nulos (`NaN`) reales en ninguna columna. El único "faltante" es el marcador `"-"` en `service` (65 % de las filas), que se trata como categoría legítima ("servicio no identificado"), no como dato faltante. Por eso no se cumple estrictamente el requisito de 0,1 %-2 % de nulos; el profesor aprobó el dataset de todas formas porque esa condición no es crítica.
+- **28.380 filas (34,5 %) eran duplicadas** al comparar solo las columnas predictoras y el objetivo (`id` es un simple contador de fila y se ignora en esa comparación). Se eliminaron antes del split train/test, dejando **53.952 filas**.
+- **Distribución del objetivo tras la limpieza:** 63,4 % normal (34.206) / 36,6 % ataque (19.746) — desbalance moderado, no severo.
+- **Desglose por tipo de ataque (`attack_cat`, solo para entender el problema, no se usa como predictora):** Exploits (7.126), Fuzzers (4.394), Generic (3.640), Reconnaissance (2.469), DoS (1.315), Shellcode (377), Analysis (312), Backdoor (70), Worms (43).
+- **Variables más correlacionadas con el objetivo:** `sttl` y `dttl` (TTL de origen y destino, correlación 0,36 y 0,28), `dload` (carga del destino, 0,24) y los contadores de conexiones recientes `ct_dst_sport_ltm` (0,23) y `ct_state_ttl` (0,19). Son buenas candidatas para explicar qué distingue a un ataque.
+- **Cardinalidad de las categóricas:** `proto` tiene 131 categorías, de las cuales 124 aparecen en menos de 10 filas; `tcp` y `udp` concentran el 85 % del tráfico. `service` tiene 13 categorías y `state` solo 7. `OneHotEncoder(handle_unknown="ignore")` las codifica todas sin necesidad de agruparlas, y tolera protocolos nuevos en producción.
+
+> **Nota:** una versión anterior de esta sección reportaba estos mismos hallazgos calculados *antes* de eliminar los duplicados (55,06 % / 44,94 % de la distribución del objetivo). Las cifras de arriba son las correctas, después de la limpieza aplicada en `fase-1/fase1_modelo.ipynb` (sección 4.1.1).
 
 ### 3.3 Limpieza y decisiones sobre los datos
 
@@ -145,10 +154,13 @@ Con este diseño:
 - en la validación cruzada, cada fold ajusta su propio preprocesamiento;
 - el modelo guardado incluye el preprocesamiento, así que en producción basta con `modelo.predict(datos_crudos)`.
 
-### 3.6 Modelos iniciales
+### 3.6 Modelo base y modelos candidatos
+
+Antes de comparar modelos candidatos se entrena un **modelo base (baseline)**: un `DummyClassifier` que predice siempre "normal" (la clase mayoritaria), sin usar ninguna variable. Sirve como punto de referencia obligatorio — si el modelo final no lo supera con claridad, no estaría aportando valor real sobre no hacer nada.
 
 | Modelo | Por qué probarlo | Estado |
 |---|---|---|
+| **Baseline (`DummyClassifier`)** | Punto de comparación: mide si el resto de modelos realmente aporta valor | Implementado |
 | **Regresión logística** | Línea base lineal, rápida e interpretable | Implementado |
 | **Random Forest** | Captura relaciones no lineales e interacciones, es robusto a escalas y valores extremos, y aporta importancia de variables | Implementado (profundidad limitada para que el modelo pese poco) |
 | Árbol de decisión | Muy interpretable; útil para explicar las reglas que separan ataques de tráfico normal | Candidato |
@@ -168,9 +180,12 @@ Sobre el conjunto de prueba se reportan precision, recall, F1, el reporte de cla
 
 | Modelo | F1 (CV en entrenamiento) | Precision (prueba) | Recall (prueba) | F1 (prueba) |
 |---|---|---|---|---|
-| Regresión logística | _[completar]_ | — | — | — |
-| Random Forest | _[completar]_ | — | — | — |
-| **Seleccionado:** _[completar]_ | | _[completar]_ | _[completar]_ | _[completar]_ |
+| Baseline (`DummyClassifier`, predice siempre "normal") | — | 0,000 | 0,000 | 0,000 |
+| Regresión logística | 0,848 ± 0,006 | — | — | — |
+| Random Forest | 0,936 ± 0,004 | — | — | — |
+| **Seleccionado: Random Forest** | | 0,957 | 0,932 | 0,945 |
+
+El baseline obtiene F1 = 0 en la clase ataque porque, al predecir siempre "normal", nunca acierta ningún ataque. El modelo seleccionado mejora el F1 en +0,945 sobre ese punto de partida.
 
 ### 3.8 Modelo guardado
 

@@ -1,0 +1,8 @@
+# Dependencias de la fase 2 (mismas versiones que los modelos v1 y v2 y que la imagen Docker).
+# Python 3.13
+pandas==3.0.6
+numpy==2.4.6
+scikit-learn==1.9.1
+scipy==1.18.1
+joblib==1.6.0
+pytest==9.2.0

@@ -1,0 +1,28 @@
+# Entornos virtuales y cachés
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Git y credenciales
+.git/
+.gitignore
+.env
+*.pem
+*.key
+
+# Se montan como volúmenes en docker run; no deben quedar dentro de la imagen
+data/
+models/
+outputs/
+
+# Notebooks, documentación y archivos temporales
+*.ipynb
+.ipynb_checkpoints/
+*.md
+*.log
+.DS_Store
+.vscode/
+.idea/

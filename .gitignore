@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Entornos virtuales y secretos
+.venv/
+venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Datos (no se suben al repositorio; ver data/README.md)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/
+
+# Modelos serializados: el modelo final de cada fase SÍ se entrega (compacto,
+# < 50 MB). Los experimentos y modelos pesados se guardan con sufijo _local.
+*_local.joblib
+*_local.pkl
+
+# Editor / sistema
+.vscode/
+.idea/
+.DS_Store
+
+# Guía interna del equipo (se comparte por fuera del repositorio)
+INSTRUCCIONES_EQUIPO.md

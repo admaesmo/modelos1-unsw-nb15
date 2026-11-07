@@ -30,3 +30,6 @@ data/processed/
 
 # Guía interna del equipo (se comparte por fuera del repositorio)
 INSTRUCCIONES_EQUIPO.md
+
+# Salidas generadas por predict.py
+fase-2/outputs/

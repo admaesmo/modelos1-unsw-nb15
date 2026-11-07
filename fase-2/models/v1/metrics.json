@@ -1,0 +1,46 @@
+{
+  "metrica_principal": "f1 (clase 1 = ataque)",
+  "modelo": {
+    "precision": 0.9573582943317732,
+    "recall": 0.9323879463155229,
+    "f1": 0.9447081462475946,
+    "accuracy": 0.9600593086831619,
+    "matriz_confusion": [
+      [
+        6678,
+        164
+      ],
+      [
+        267,
+        3682
+      ]
+    ]
+  },
+  "baseline": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "accuracy": 0.6340468909276249,
+    "matriz_confusion": [
+      [
+        6842,
+        0
+      ],
+      [
+        3949,
+        0
+      ]
+    ]
+  },
+  "mejora_f1_sobre_baseline": 0.9447081462475946,
+  "validacion_cruzada_f1_train": {
+    "logreg": {
+      "media": 0.8475218656064225,
+      "std": 0.005609988486542182
+    },
+    "random_forest": {
+      "media": 0.9359957907232742,
+      "std": 0.0038198293695965793
+    }
+  }
+}

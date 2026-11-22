@@ -1,0 +1,22 @@
+# Contexto = raíz del repositorio (fases 3 y 4). Las fases 1 y 2 tienen su propio contexto.
+.venv/
+.git/
+.github/
+**/__pycache__/
+**/.pytest_cache/
+*.py[cod]
+.env
+*.pem
+*.key
+data/
+scripts/
+fase-1/
+fase-2/models/
+fase-2/data/
+fase-2/outputs/
+fase-2/tests/
+fase-4/registro/
+*.ipynb
+*.md
+HANDOFF.md
+INSTRUCCIONES_EQUIPO.md

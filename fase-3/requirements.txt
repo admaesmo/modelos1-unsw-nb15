@@ -1,0 +1,12 @@
+# Dependencias de la fase 3 (Python 3.13): las de la fase 2 + la API
+pandas==3.0.6
+numpy==2.4.6
+scikit-learn==1.9.1
+scipy==1.18.1
+joblib==1.6.0
+pytest==9.2.0
+fastapi==0.165.0
+starlette==1.10.0
+pydantic==2.14.4
+uvicorn==0.54.0
+httpx==0.28.1
